@@ -34,10 +34,25 @@ def download():
             except (IOError, OSError):
                 print("Error writing to file")
 
+def download2():
+    url = f'{site}/download/9000'
+    try:
+        response = requests.get(url,stream=True,timeout=site_timeout)
+    except requests.exceptions.RequestException:
+        print("common exception")
+    if response.headers.get("Content-Length", "") == "4096":
+        if response.headers.get("Content-Disposition", "") == 'attachment; filename=" - .mp3"':
+            print("pusto")
+
+    # cd = response.headers.get("Content-Disposition", "")
+    # match = re.search(r'filename="(.+)"', cd)
+    # if match:
+    #     raw_name = match.group(1)
+    #     filename = raw_name.encode('latin-1').decode('utf-8')
+    #     print(filename)
+
 def main():
-    create_dir()
-    download()
-    print("comlplete")
+    download2()
 
 if __name__ == "__main__":
         main()
