@@ -6,7 +6,7 @@ from pathlib import Path
 site = "https://sakhamusic.ru"
 site_timeout = 3
 start = 1
-limit = 10
+limit = 6000
 download_dir = "sakhamusic/"
 
 def create_dir():
@@ -29,7 +29,7 @@ def download(m_id: int = 1):
         return
     if response.headers.get("Content-Length", "") == "4096":
         if response.headers.get("Content-Disposition", "") == 'attachment; filename=" - .mp3"':
-            print("pusto")
+            print(f"{m_id} pusto")
             return
     cd = response.headers.get("Content-Disposition", "")
     match = re.search(r'filename="(.+)"', cd)
