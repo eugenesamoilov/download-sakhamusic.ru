@@ -2,10 +2,6 @@
 import re
 import requests
 from pathlib import Path
-from threading import Thread, BoundedSemaphore
-
-max_threads = 4
-semaphore = BoundedSemaphore(max_threads)
 
 site = "https://sakhamusic.ru"
 site_timeout = 3
