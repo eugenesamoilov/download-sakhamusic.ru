@@ -38,6 +38,7 @@ def download(m_id: int = 1):
         filename = raw_name.encode('latin-1').decode('utf-8')
     filename=download_dir+filename
     if check_file(filename):
+        print(f"{m_id} {filename} file exist")
         return
     else:            
         with open(filename, 'wb') as f:
