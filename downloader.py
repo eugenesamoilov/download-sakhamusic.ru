@@ -2,11 +2,15 @@
 import re
 import requests
 from pathlib import Path
+from threading import Thread, BoundedSemaphore
+
+max_threads = 4
+semaphore = BoundedSemaphore(max_threads)
 
 site = "https://sakhamusic.ru"
 site_timeout = 3
 start = 1
-limit = 6000
+limit = 10
 download_dir = "sakhamusic/"
 
 def create_dir():
@@ -25,7 +29,7 @@ def download(m_id: int = 1):
     try:
         response = requests.get(url,stream=True,timeout=site_timeout)
     except requests.exceptions.RequestException:
-        print("common exception")
+        print(f"{m_id} common exception")
         return
     if response.headers.get("Content-Length", "") == "4096":
         if response.headers.get("Content-Disposition", "") == 'attachment; filename=" - .mp3"':
