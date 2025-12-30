@@ -2,17 +2,12 @@
 import re
 import requests
 from pathlib import Path
-from threading import Thread, BoundedSemaphore
 
 site = "https://sakhamusic.ru"
 site_timeout = 3
 start = 1
 limit = 6000
 download_dir = "sakhamusic/"
-
-max_threads = 2
-semaphore = BoundedSemaphore(max_threads)
-
 
 def create_dir():
      folder_path = Path(download_dir)
