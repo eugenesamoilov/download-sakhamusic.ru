@@ -2,12 +2,17 @@
 import re
 import requests
 from pathlib import Path
+from threading import Thread, BoundedSemaphore
 
 site = "https://sakhamusic.ru"
 site_timeout = 3
 start = 1
 limit = 6000
 download_dir = "sakhamusic/"
+
+max_threads = 4
+semaphore = BoundedSemaphore(max_threads)
+
 
 def create_dir():
      folder_path = Path(download_dir)
@@ -23,39 +28,46 @@ def check_file(m_name: str,cl: str):
         return False
 
 def download(m_id: int = 1):
-    url = f'{site}/download/{m_id}'
-    try:
-        response = requests.get(url,stream=True,timeout=site_timeout)
-    except requests.exceptions.RequestException:
-        print(f"{m_id} common exception")
-        return
-    if response.headers.get("Content-Length", "") == "4096":
-        if response.headers.get("Content-Disposition", "") == 'attachment; filename=" - .mp3"':
-            print(f"{m_id} pusto")
+    with semaphore:
+        url = f'{site}/download/{m_id}'
+        try:
+            response = requests.get(url,stream=True,timeout=site_timeout)
+        except requests.exceptions.RequestException:
+            print(f"{m_id} common exception")
             return
-    cd = response.headers.get("Content-Disposition", "")
-    cl = response.headers.get("Content-Length", "")
-    match = re.search(r'filename="(.+)"', cd)
-    if match:
-        raw_name = match.group(1)
-        filename = raw_name.encode('latin-1').decode('utf-8')
-    filename=download_dir+filename
-    if check_file(filename,cl):
-        print(f"{m_id} {filename} file exist")
-        return
-    else:            
-        with open(filename, 'wb') as f:
-            try:
-                f.write(response.content)
-                print(f"{m_id} {filename} saved")
-            except (IOError, OSError):
-                print(f"{m_id} Error writing to file")
+        if response.headers.get("Content-Length", "") == "4096":
+            if response.headers.get("Content-Disposition", "") == 'attachment; filename=" - .mp3"':
+                print(f"{m_id} pusto")
+                return
+        cd = response.headers.get("Content-Disposition", "")
+        cl = response.headers.get("Content-Length", "")
+        match = re.search(r'filename="(.+)"', cd)
+        if match:
+            raw_name = match.group(1)
+            filename = raw_name.encode('latin-1').decode('utf-8')
+        filename=download_dir+filename
+        if check_file(filename,cl):
+            print(f"{m_id} {filename} file exist")
+            return
+        else:            
+            with open(filename, 'wb') as f:
+                try:
+                    f.write(response.content)
+                    print(f"{m_id} {filename} saved")
+                except (IOError, OSError):
+                    print(f"{m_id} Error writing to file")
 
 def main():
     create_dir()
+    threads = []
+    
     for i in range(start,limit+1):
-        download(i)
-    print("completed")
+        t = Thread(target=download,args=(i,))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join()
 
 if __name__ == "__main__":
         main()
