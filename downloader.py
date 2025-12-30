@@ -6,17 +6,19 @@ from pathlib import Path
 site = "https://sakhamusic.ru"
 site_timeout = 3
 start = 1
-limit = 10
+limit = 6000
 download_dir = "sakhamusic/"
 
 def create_dir():
      folder_path = Path(download_dir)
      folder_path.mkdir(parents=True, exist_ok=True)
 
-def check_file(m_name: str):
+def check_file(m_name: str,cl: str):
+    cl = int(cl)
     path = Path(m_name)
     if path.exists():
-        return True
+        if (path.stat().st_size) == cl:
+            return True
     else:
         return False
 
@@ -32,12 +34,13 @@ def download(m_id: int = 1):
             print(f"{m_id} pusto")
             return
     cd = response.headers.get("Content-Disposition", "")
+    cl = response.headers.get("Content-Length", "")
     match = re.search(r'filename="(.+)"', cd)
     if match:
         raw_name = match.group(1)
         filename = raw_name.encode('latin-1').decode('utf-8')
     filename=download_dir+filename
-    if check_file(filename):
+    if check_file(filename,cl):
         print(f"{m_id} {filename} file exist")
         return
     else:            
