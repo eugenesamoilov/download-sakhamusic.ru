@@ -2,12 +2,17 @@
 import re
 import requests
 from pathlib import Path
+from threading import Thread, BoundedSemaphore
 
 site = "https://sakhamusic.ru"
 site_timeout = 3
 start = 1
 limit = 6000
 download_dir = "sakhamusic/"
+
+max_threads = 2
+semaphore = BoundedSemaphore(max_threads)
+
 
 def create_dir():
      folder_path = Path(download_dir)
@@ -49,7 +54,7 @@ def download(m_id: int = 1):
                 f.write(response.content)
                 print(f"{m_id} {filename} saved")
             except (IOError, OSError):
-                print("Error writing to file")
+                print(f"{m_id} Error writing to file")
 
 def main():
     create_dir()
